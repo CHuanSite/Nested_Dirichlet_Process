@@ -1,5 +1,15 @@
 library(plotly)
 library(tidyverse)
+library(MCMCpack)
+
+####################################
+#
+#
+#Setting for the simulation
+#
+#
+####################################
+
 
 ## The weight for different distributions in the mixture
 w = list()
@@ -24,7 +34,7 @@ sigma[[4]] = c(1.0, 2.0, 2.0, 1.0)
 
 ## The number of samples and its nested samples
 J = 20
-N = 100
+N = 500
 
 ## The density for the four mixtures
 p_density = list()
@@ -46,6 +56,14 @@ plot_ly(x = seq(-10, 10, 0.1), y  = p_density[[1]], name = 'T1', type = 'scatter
   add_trace(y = p_density[[4]], name = 'T4', mode = 'lines') %>%
   layout(title = "True distributions used in the simulation study")
 
+##############################################
+#
+#
+# Generate the simulation data
+#
+#
+###############################################
+
 
 ## Number of samples for each distribution
 n_sample = c(1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4)
@@ -56,21 +74,21 @@ n_sample = n_sample[sample(1 : J, replace = FALSE)]
 ## Store the data in dat
 dat = c()
 
-## Store the gorup in group
+## Store the group in group
 group = c()
+
+## Store the data for each group
+data_store = list()
 
 ## Generate the simulation data
 for(j in 1 : J){
+  dat = c()
   index_j = n_sample[j]
   print(index_j)
+  ind = sample(1 : length(w[[index_j]]), N, replace = TRUE, prob = w[[index_j]])
   for(k in 1 : length(w[[index_j]])){
     dat = c(dat, rnorm(sum(ind == k), mu[[index_j]][k], sqrt(sigma[[index_j]][k])))
   }
-  #print(length(dat))
-  group = c(group, rep(index_j, N))
+  data_store[[j]] = dat
 }
-
-## Do the permutation on the dataset 
-dat = cbind(dat, group)
-dat = dat[sample(1 : (N * J), replace = FALSE), ]
 
