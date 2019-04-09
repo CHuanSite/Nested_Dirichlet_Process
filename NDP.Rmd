@@ -9,11 +9,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, message = FALSE}
 library(plotly)
 library(tidyverse)
 library(MCMCpack)
+```
 
+```{r, cache = TRUE}
 ####################################
 #
 #
@@ -121,7 +123,7 @@ K = 35
 L = 55
 
 ## Number of indicators to be performed
-T = 100
+T = 1000
 
 ## Hyperparameters for the prior
 ## Normal-Inverse-Gamma Prior
@@ -210,7 +212,7 @@ psi = 1
 #
 ##############################################################################
 
-for(ite in 2 : 200){
+for(ite in 2 : T){
   
   ## First compute the indicator for each medical center
   ind_center_store[[ite]] = rep(0, J)
@@ -350,10 +352,12 @@ for(ite in 2 : 200){
   alpha_psi = N_temp / 2 + K * L / 2 + (alpha_nig + 1) * L * K - 1
   beta_psi = (y_sum_temp + 2 * K * L * beta_nig + lambda_nig * sum((theta_store[[ite]] - mu_nig) * (theta_store[[ite]] - mu_nig) )) / 2
   psi = c(psi, sqrt(rinvgamma(1, alpha_psi, beta_psi)))
-  print(ite)
-  print(ind_center_store[[ite]])
+  #print(ite)
+  #print(ind_center_store[[ite]])
 }
+```
 
+```{r}
 
 
 ## Show the heatmap for the clustering result
@@ -362,12 +366,24 @@ cluster_matrix = matrix(0, nrow = J, ncol = J)
 for(t in 1 : J){
   for(s in 1 : J){
     temp_count = 0
-    for(i in 30 : 174){
+    for(i in 500 : 1000){
       temp_count = temp_count + as.numeric(ind_center_store[[i]][t] == ind_center_store[[i]][s])
     }
     cluster_matrix[t, s] = temp_count / 14
   }
 }
 heatmap(1 - cluster_matrix)
+```
 
+```{r, echo = FALSE}
+print(paste0("The first group is: "))
+print(which(n_sample == 1))
+print(paste0("The second group is: "))
+print(which(n_sample == 2))
+print(paste0("The thrid group is: "))
+print(which(n_sample == 3))
+print(paste0("The fourth group is: "))
+print(which(n_sample == 4))
+
+plot(psi, main = "The trace plot of the psi component", type = "l")
 ```
